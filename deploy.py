@@ -2,42 +2,81 @@
 """
 Push gifs/*.gif to a WLED controller and create presets + a rotating playlist.
 
-  python3 deploy.py [host]            default host 192.168.1.150
+  python3 deploy.py [host] [--set fall|halloween] [--playlist-only]
+                                      default host 192.168.1.150, default set fall
 
 Creates preset 1..N (one per GIF, effect "Image", segment named after the file)
-and preset 30 "Halloween Rotation" (playlist, 20 s per image, no transition).
-Safe to re-run: uploads overwrite, presets are rewritten in place.
+and preset 30 (the active rotation playlist, 20 s per image, no transition).
+The schedule timer always points at preset 30, so switching sets is just a
+re-run with a different --set. Safe to re-run: uploads overwrite, presets are
+rewritten in place.
 """
 import json, os, subprocess, sys, time, urllib.request
 
-HOST = next((a for a in sys.argv[1:] if not a.startswith("--")), "192.168.1.150")
+_args = sys.argv[1:]
+HOST = next((a for i, a in enumerate(_args) if not a.startswith("--") and (i == 0 or _args[i - 1] != "--set")),
+            "192.168.1.150")
 BASE = f"http://{HOST}"
 HERE = os.path.dirname(os.path.abspath(__file__))
 GIFS = os.path.join(HERE, "gifs")
 
-# (file stem, preset name) in rotation order
-ROTATION = [
-    ("pumpkin",   "Jack-o-lantern"),
-    ("ghost",     "Ghost"),
-    ("leaves",    "Falling Leaves"),
-    ("bat",       "Bat & Moon"),
-    ("owl",       "Owl"),
-    ("spider",    "Spider"),
-    ("fire",      "Bonfire"),
-    ("skull",     "Skull"),
-    ("coffee",    "Hot Coffee"),
-    ("witchhat",  "Witch Hat"),
-    ("cat",       "Black Cat"),
-    ("maple",     "Maple Leaf"),
-    ("eyes",      "Spooky Eyes"),
-    ("sauron",    "Eye of Sauron"),
-    ("candy",     "Candy Corn"),
-    ("house",     "Haunted House"),
-    ("frank",     "Frankenstein"),
-    ("tombstone", "Tombstone"),
-    ("cauldron",  "Cauldron"),
-    ("happy",     "Happy Halloween"),
-]
+# Each set: (file stem, preset name) in rotation order. Pick one with --set NAME.
+SETS = {
+    "fall": {
+        "label": "Fall Rotation", "ql": "FA", "gen": "gen_fall.py",
+        "rotation": [
+            ("cornucopia", "Cornucopia"),
+            ("leaves",     "Falling Leaves"),
+            ("pumpkins",   "Pumpkin Patch"),
+            ("geese",      "Geese & Moon"),
+            ("pie",        "Pumpkin Pie"),
+            ("maple",      "Maple Leaf"),
+            ("squirrel",   "Squirrel"),
+            ("corn",       "Indian Corn"),
+            ("sunflower",  "Sunflower"),
+            ("scarecrow",  "Scarecrow"),
+            ("apples",     "Apple Tree"),
+            ("coffee",     "Hot Coffee"),
+            ("wheat",      "Wheat Field"),
+            ("mushrooms",  "Toadstools"),
+            ("fox",        "Fox"),
+            ("football",   "Football"),
+            ("tree",       "Autumn Tree"),
+            ("owl",        "Owl"),
+            ("fire",       "Bonfire"),
+            ("thanks",     "Happy Thanksgiving"),
+        ],
+    },
+    "halloween": {
+        "label": "Halloween Rotation", "ql": "HW", "gen": "gen_halloween.py",
+        "rotation": [
+            ("pumpkin",   "Jack-o-lantern"),
+            ("ghost",     "Ghost"),
+            ("leaves",    "Falling Leaves"),
+            ("bat",       "Bat & Moon"),
+            ("owl",       "Owl"),
+            ("spider",    "Spider"),
+            ("fire",      "Bonfire"),
+            ("skull",     "Skull"),
+            ("coffee",    "Hot Coffee"),
+            ("witchhat",  "Witch Hat"),
+            ("cat",       "Black Cat"),
+            ("maple",     "Maple Leaf"),
+            ("eyes",      "Spooky Eyes"),
+            ("sauron",    "Eye of Sauron"),
+            ("candy",     "Candy Corn"),
+            ("house",     "Haunted House"),
+            ("frank",     "Frankenstein"),
+            ("tombstone", "Tombstone"),
+            ("cauldron",  "Cauldron"),
+            ("happy",     "Happy Halloween"),
+        ],
+    },
+}
+SET_NAME = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--set=")), None) \
+    or next((sys.argv[i + 1] for i, a in enumerate(sys.argv[1:], 1) if a == "--set" and i < len(sys.argv) - 1), "fall")
+SET = SETS[SET_NAME]
+ROTATION = SET["rotation"]
 PLAYLIST_ID = 30
 SECONDS_PER_IMAGE = 20
 IMAGE_FX = 53          # WLED "Image" effect
@@ -84,7 +123,7 @@ def main():
     info = get_json("/json/info")
     m = info["leds"].get("matrix", {})
     print(f"WLED {info['ver']} at {HOST}: matrix {m.get('w')}x{m.get('h')}, "
-          f"fs {info['fs']['u']}/{info['fs']['t']} KB used")
+          f"fs {info['fs']['u']}/{info['fs']['t']} KB used -- deploying set '{SET_NAME}'")
     assert (m.get("w"), m.get("h")) == (20, 20), "expected a 20x20 matrix"
 
     # release whatever GIF the Image effect has open so re-uploads can overwrite it
@@ -117,11 +156,11 @@ def main():
         "playlist": {"ps": ids, "dur": [SECONDS_PER_IMAGE * 10] * len(ids),
                      "transition": 0, "repeat": 0, "end": 0},
         "o": True,                           # store this object verbatim (playlist), not current state
-        "psave": PLAYLIST_ID, "n": "Halloween Rotation", "ql": "HW",
+        "psave": PLAYLIST_ID, "n": SET["label"], "ql": SET["ql"],
     }
     post_json("/json/state", playlist)
     time.sleep(0.6)
-    print(f"  preset {PLAYLIST_ID}  Halloween Rotation (playlist, {SECONDS_PER_IMAGE}s each)")
+    print(f"  preset {PLAYLIST_ID}  {SET['label']} (playlist, {SECONDS_PER_IMAGE}s each)")
 
     print("\n-- starting the rotation")
     post_json("/json/state", {"ps": PLAYLIST_ID})
