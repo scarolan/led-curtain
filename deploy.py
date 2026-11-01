@@ -2,7 +2,7 @@
 """
 Push gifs/*.gif to a WLED controller and create presets + a rotating playlist.
 
-  python3 deploy.py [host] [--set fall|halloween] [--playlist-only]
+  python3 deploy.py [host] [--set fall|halloween|christmas] [--playlist-only]
                                       default host 192.168.1.150, default set fall
 
 Creates preset 1..N (one per GIF, effect "Image", segment named after the file)
@@ -22,6 +22,32 @@ GIFS = os.path.join(HERE, "gifs")
 
 # Each set: (file stem, preset name) in rotation order. Pick one with --set NAME.
 SETS = {
+    "christmas": {
+        "label": "Holiday Rotation", "ql": "XM", "gen": "gen_christmas.py",
+        "rotation": [
+            ("tree",        "Christmas Tree"),
+            ("snow",        "Snowfall"),
+            ("santa",       "Santa"),
+            ("gifts",       "Gifts"),
+            ("reindeer",    "Reindeer"),
+            ("snowman",     "Snowman"),
+            ("merry",       "Merry Christmas"),
+            ("candycane",   "Candy Cane"),
+            ("cardinal",    "Cardinal"),
+            ("bells",       "Jingle Bells"),
+            ("gingerbread", "Gingerbread Man"),
+            ("aurora",      "Northern Lights"),
+            ("wreath",      "Wreath"),
+            ("sleigh",      "Sleigh & Moon"),
+            ("penguin",     "Penguin"),
+            ("cocoa",       "Hot Cocoa"),
+            ("ornaments",   "Ornaments"),
+            ("fireplace",   "Fireplace"),
+            ("snowflake",   "Snowflake"),
+            ("manger",      "Manger"),
+            ("fireworks",   "Fireworks"),
+        ],
+    },
     "fall": {
         "label": "Fall Rotation", "ql": "FA", "gen": "gen_fall.py",
         "rotation": [

@@ -4,7 +4,7 @@ Hand-drawn 20x20 pixel-art GIFs for the WLED LED curtain at 192.168.1.150
 (WLED 16.x, ESP32-C3, 20x20 matrix). Every image is authored at native
 resolution — nothing is downscaled.
 
-Two sets so far: **fall / Thanksgiving** (current) and **Halloween**.
+Three sets so far: **fall / Thanksgiving** (current), **December / winter holiday**, and **Halloween**.
 
 ## Files
 
@@ -14,13 +14,17 @@ Two sets so far: **fall / Thanksgiving** (current) and **Halloween**.
   pie, squirrel, corn, apple tree, sunflower, wheat, scarecrow, turning tree,
   geese, football, fox, toadstools, scrolling text) plus the reusable fall
   scenes from the Halloween set (leaves, maple, bonfire, coffee, owl).
+- `gen_christmas.py` — the December set (tree, snowfall, Santa, gifts, reindeer,
+  snowman, scrolling text, candy cane, cardinal, bells, gingerbread man,
+  northern lights, wreath, sleigh, penguin, cocoa, ornaments, fireplace,
+  snowflake, manger, fireworks).
 - `gen_halloween.py` — the Halloween scenes.
 - `deploy.py` — uploads a set's `gifs/*.gif` to the controller, saves one
   preset per image and the rotation playlist (preset 30), then starts it.
 - `schedule.py` — bakes the sunset-to-10 PM schedule into the controller
   (NTP, timezone, Albany coordinates, two timers).
 - `gifs/` — generated output (full-frame, global palette GIFs; WLED-safe).
-- `preview_fall.png`, `preview_halloween.png` — contact sheets, 4 frames per scene.
+- `preview_*.png` — one contact sheet per set, 4 frames per scene.
 
 ## Workflow
 
@@ -28,12 +32,13 @@ Two sets so far: **fall / Thanksgiving** (current) and **Halloween**.
 python3 gen_fall.py                 # regenerate the fall GIFs + preview_fall.png
 python3 gen_fall.py fox pie         # regenerate just some scenes
 python3 deploy.py                   # upload + presets + playlist + start (fall set)
+python3 deploy.py --set christmas   # switch to the December set (do this Dec 1)
 python3 deploy.py --set halloween   # switch the curtain back to the Halloween set
 python3 deploy.py --playlist-only   # only rewrite/restart the playlist
 ```
 
-Both sets' GIFs can live on the controller at once (each set is ~70 KB of a
-~980 KB filesystem); `deploy.py` just rewrites presets 1-20 and the playlist
+All sets' GIFs can live on the controller at once (each set is ~50-90 KB of a
+~980 KB filesystem); `deploy.py` just rewrites presets 1-N and the playlist
 in preset 30 for whichever set you pick.
 
 ## How it plays on WLED
