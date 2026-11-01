@@ -45,6 +45,7 @@ SETS = {
             ("fireplace",   "Fireplace"),
             ("snowflake",   "Snowflake"),
             ("manger",      "Manger"),
+            ("menorah",     "Menorah"),
             ("fireworks",   "Fireworks"),
         ],
     },

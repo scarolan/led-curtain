@@ -836,7 +836,37 @@ def manger():
         frames.append(f)
     return frames, 150
 
-# ---- 21. Fireworks -----------------------------------------------------------
+# ---- 21. Menorah with flickering candles ------------------------------------
+@scene
+def menorah():
+    rnd = random.Random(8)
+    base = blank()
+    xs = [1, 3, 5, 7, 9, 11, 13, 15, 17]
+    for k, x in enumerate(xs):
+        top = 8 if k != 4 else 6                          # shamash stands taller
+        for y in range(top, 15):
+            put(base, x, y, X['I'] if y > top else X['b'])
+        put(base, x, 15, X['M'])
+    for x in range(1, 18):
+        put(base, x, 16, X['M'])
+    for (x, y) in [(9, 17), (9, 18), (7, 19), (8, 19), (9, 19), (10, 19), (11, 19)]:
+        put(base, x, y, X['M'])
+    N = 16
+    frames = []
+    for i in range(N):
+        f = copy(base)
+        for k, x in enumerate(xs):
+            top = 8 if k != 4 else 6
+            h = rnd.choice([2, 2, 3])
+            put(f, x, top - 1, (255, 200, 60))
+            put(f, x, top - 2, (255, 140, 20) if h >= 2 else (0, 0, 0))
+            put(f, x, top - 3, (255, 80, 0) if h == 3 else (0, 0, 0))
+            if rnd.random() < 0.3:
+                put(f, x + rnd.choice([-1, 1]), top - 2, (120, 60, 0))
+        frames.append(f)
+    return frames, 110
+
+# ---- 22. Fireworks -----------------------------------------------------------
 @scene
 def fireworks():
     rnd = random.Random(99)

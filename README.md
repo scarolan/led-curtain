@@ -17,7 +17,7 @@ Three sets so far: **fall / Thanksgiving** (current), **December / winter holida
 - `gen_christmas.py` — the December set (tree, snowfall, Santa, gifts, reindeer,
   snowman, scrolling text, candy cane, cardinal, bells, gingerbread man,
   northern lights, wreath, sleigh, penguin, cocoa, ornaments, fireplace,
-  snowflake, manger, fireworks).
+  snowflake, manger, menorah, fireworks).
 - `gen_halloween.py` — the Halloween scenes.
 - `deploy.py` — uploads a set's `gifs/*.gif` to the controller, saves one
   preset per image and the rotation playlist (preset 30), then starts it.
